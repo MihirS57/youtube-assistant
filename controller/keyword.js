@@ -1,5 +1,18 @@
 const { listenerCount } = require('../models/video');
 const Video = require('../models/video')
+
+const Pusher = require("pusher");
+
+const pusher = new Pusher({
+  appId: "1329244",
+  key: "92ab853cd55fee798a51",
+  secret: "29eefa737a1916b7d6e9",
+  cluster: "ap2",
+  useTLS: true
+});
+
+
+
 exports.testing = async(req,res,next) => {
     try{
         const Id = req.params.Id;
@@ -45,7 +58,42 @@ exports.getVideo = async(req,res,next) => {
         })
     }
 }
-
+// get top 5 results
+exports.getTopResults = async (req,res,next) => {
+    try{
+        const videoId = req.params.Id;
+        
+        const video = await Video.findOne({videoId:videoId});
+        if(!video){
+            return res.status(200)
+                    .json({
+                        success: true,
+                        message: "No results at this moment"
+                    })
+        }else{
+            let queries = video.query;
+            let topQs = []
+            for(let i = 0;i<queries.length && queries[i].count >= 5 && topQs.length < 5;i++){
+                topQs.push(queries[i])
+            }
+            
+            return res.status(200)
+                    .json({
+                        success: true,
+                        message: "Returned top 5",
+                        query: topQs
+                    })
+        }
+    }catch(err){
+        console.log(err.stack);
+        res.status(400)
+        .json({
+            success: false,
+            error: err
+        })
+    }
+}
+//test API below
 exports.insertVideo = async (req,res,next) => {
     try{
         const reqId = req.params.Id;
@@ -70,13 +118,14 @@ exports.insertVideo = async (req,res,next) => {
         })
     }
 }
-
+//insert or update existing key count
 exports.insertKey = async (req,res,next) => {
     try{
         const videoId = req.params.Id;
-        const {key} = req.body;
+        const {key,ogList} = req.body;
         console.log(key);
         const video = await Video.findOne({videoId:videoId});
+        console.log(video)
         if(!video){
             const videoNew = await Video.create({videoId:videoId,query: [{key: key,count:1}]});
             if(!videoNew){
@@ -92,9 +141,10 @@ exports.insertKey = async (req,res,next) => {
             });
         }
         var qList = video.query;
+        
         var flag = false;
         var ind = -1;
-        for(var i=0;i<qList.length;i++){
+        for(let i=0;i<qList.length;i++){
             var k = qList[i].key;
             var c = qList[i].count;
             if(k == key){
@@ -110,14 +160,32 @@ exports.insertKey = async (req,res,next) => {
         }
         
         qList = checkAndSort(qList,ind);
+        console.log(videoId+"1");
         
-        const videoUpdated = await Video.findOneAndUpdate(videoId,{query:qList},{
+        const videoUpdated = await Video.findByIdAndUpdate(video._id,{query:qList},{
             new: true,
             newValidators: true
         });
+        console.log(videoUpdated);
+        let topQs = []
+        for(let i = 0;i<qList.length && qList[i].count >= 5 && topQs.length < 5;i++){
+            topQs.push(qList[i])
+        } 
+        console.log(qList)
+        let keyList = []
+        for(let i = 0;i<topQs.length;i++){
+            keyList[i] = topQs[i].key
+        }
+
+        if(JSON.stringify(ogList) != JSON.stringify( keyList)){
+            pusher.trigger("youtube-assistant", videoId, {
+                message: keyList
+              });
+        }
         return res.status(200).json({
             success: true,
             message:"Successfully key inserted/updated",
+            keyList: keyList,
             video: videoUpdated});
     }catch(err){
         console.log(err.stack);
