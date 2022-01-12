@@ -11,10 +11,13 @@ connectDb();
 
 app.use(express.json());
 const keyword = require('./routes/keyword');
-app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
+
+app.use(function (req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     next();
-})
+});
+
 app.use(errorHandle);
 app.use('/api/v1/keyword',keyword);
 const server = app.listen(PORT, () => {
