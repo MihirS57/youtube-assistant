@@ -76,11 +76,16 @@ exports.getTopResults = async (req,res,next) => {
             for(let i = 0;i<queries.length && queries[i].count >= 5 && topQs.length < 5;i++){
                 topQs.push(queries[i])
             }
+            let keyList = []
+            for(let i = 0;i<topQs.length;i++){
+                keyList[i] = topQs[i].key
+            }
             
             return res.status(200)
                     .json({
                         success: true,
                         message: "Returned top 5",
+                        keyList: keyList,
                         query: topQs
                     })
         }
