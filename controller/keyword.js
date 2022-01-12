@@ -127,7 +127,7 @@ exports.insertVideo = async (req,res,next) => {
 exports.insertKey = async (req,res,next) => {
     try{
         const videoId = req.params.Id;
-        const {key,ogList} = req.body;
+        const {key} = req.body;
         console.log(key);
         const video = await Video.findOne({videoId:videoId});
         console.log(video)
@@ -146,7 +146,14 @@ exports.insertKey = async (req,res,next) => {
             });
         }
         var qList = video.query;
-        
+        let topQs_Old = []
+        for(let i = 0;i<qList.length && qList[i].count >= 5 && topQs_Old.length < 5;i++){
+            topQs_Old.push(qList[i])
+        }
+        let keyList_Old = []
+        for(let i = 0;i<topQs_Old.length;i++){
+            keyList_Old[i] = topQs_Old[i].key
+        }    
         var flag = false;
         var ind = -1;
         for(let i=0;i<qList.length;i++){
@@ -182,7 +189,7 @@ exports.insertKey = async (req,res,next) => {
             keyList[i] = topQs[i].key
         }
 
-        if(JSON.stringify(ogList) != JSON.stringify( keyList)){
+        if(JSON.stringify(keyList_Old) != JSON.stringify( keyList)){
             pusher.trigger("youtube-assistant", videoId, {
                 message: keyList
               });
@@ -190,6 +197,7 @@ exports.insertKey = async (req,res,next) => {
         return res.status(200).json({
             success: true,
             message:"Successfully key inserted/updated",
+            keyList_Old:keyList_Old,
             keyList: keyList,
             video: videoUpdated});
     }catch(err){
