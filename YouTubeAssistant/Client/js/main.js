@@ -20,7 +20,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const goBack = document.getElementById("btn3");
     const loadingHeader = document.getElementById("loadingHeader")
     const graphDiv = document.getElementById("graphs")
-    
+    const showReddit = document.getElementById("redditL");
+    const redditTableOutput = document.getElementById("RedditTableOutput")
+    const loadingHeader_R = document.getElementById("loadingHeader_R")
+    const redditOutput = document.getElementById("redditOutput")
+    const Rbtn = document.getElementById("Rtn");
     // Regex
     let regexReplace = /(<|>)/gi
     let regexSplit = /(v=| vi\/ | \/v\/ | youtu\.be\/ | \/embed\/)/
@@ -74,7 +78,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         data.forEach(ele => {
             const li = document.createElement("li")
-            li.className = "list-group-item list-group-item-action"
+            li.className = "list-group-item list-group-item-action btn"
             li.innerHTML = `
             <div class="row">
                 <div class="col-md-1"></div>
@@ -326,7 +330,10 @@ document.addEventListener("DOMContentLoaded", () => {
             if (id != undefined) id = id.split(regexId)[0]
             entityOutput.innerHTML = `
             VideoId : <span class="text-danger font-weight-bold">${id}</span>
-            <h4 class="text-danger font-weight-bold">loading ... </h4>
+            <br>
+            <br>
+            <br>
+            <img src="../1492.gif" class="center"  width="50" height="50" >
             `
             console.log(await getYTComments(id))
             console.log(await getTopKeywords(id))
@@ -358,7 +365,8 @@ document.addEventListener("DOMContentLoaded", () => {
                         selectedKeywords.forEach(ele=>{
                             temp = temp+ele.value+" "
                         });
-                        tableOutput.innerHTML = `<h2 class="text-danger text-center font-weight-bold">Loading...</h2>`
+                        tableOutput.innerHTML = `<br>
+                        <img src="../1492.gif" class="center"  width="50" height="50" >`
                         getResponseByKeywordSubmit(id,temp,tabs[0])
                         
                     })
@@ -372,6 +380,8 @@ document.addEventListener("DOMContentLoaded", () => {
             if (unique_ents) {
                 btn.disabled = false
                 showGraph.disabled = false
+                showReddit.disabled = false
+                redditOutput.disabled = false
                 let div = document.createElement("div")
                 div.setAttribute("class", "row ml-2")
                 div.innerHTML = ""
@@ -393,7 +403,8 @@ document.addEventListener("DOMContentLoaded", () => {
                             entityArray.push(ele.value)
                         });
                         // Display loading Message;
-                        tableOutput.innerHTML = `<h2 class="text-danger text-center font-weight-bold">Loading...</h2>`
+                        tableOutput.innerHTML = `<br>
+                        <img src="../1492.gif" class="center"  width="50" height="50" >`
                         getResponseByEntity(id,entityArray,tabs[0])
                     }
                     else{
@@ -415,7 +426,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     `
                 }
                 else {
-                    tableOutput.innerHTML = `<h2 class="text-danger text-center font-weight-bold" >Loading...</h2>`
+                    tableOutput.innerHTML = `<br>
+                    <img src="../1492.gif" class="center"  width="50" height="50" >`
                     
                     let x = await insertKey(id,inputValue)
                     console.log("X: ",x)
@@ -437,7 +449,8 @@ document.addEventListener("DOMContentLoaded", () => {
                         selectedKeywords.forEach(ele=>{
                             temp = temp+ele.value+" "
                         });
-                        tableOutput.innerHTML = `<h2 class="text-danger text-center font-weight-bold">Loading...</h2>`
+                        tableOutput.innerHTML = `<br>
+                        <img src="../1492.gif" class="center"  width="50" height="50" >`
                         getResponseByKeywordSubmit(id,temp,tabs[0])
                         
                     })
@@ -477,6 +490,56 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
                 plotDonutGraph(sentimentKeyArray,sentimentValueArray);
                 plotBarGraph(countKeyArray,countValueArray);
+            })
+
+            showReddit.addEventListener("click",async (e) => {
+                home.style.display="none";
+                redditOutput.style.display="block";
+                graphDiv.style.display="none";
+                loadingHeader_R.style.display="block";
+
+                redditTableOutput.innerHTML = ""
+                
+        
+                e.preventDefault();
+                const rawResponse = await fetch(`https://youtube-assistant-keyword.herokuapp.com/api/v1/keyword/entity/redditData`, {
+                        method: 'POST',
+                        headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({'entList': unique_ents})
+                    });
+                    const content = await rawResponse.json();
+                    console.log(content)
+                    if(content){
+                        
+                        loadingHeader_R.style.display="none"
+                        content.urls.forEach((element,index)=> {
+                        let div = document.createElement("div")
+                        //div.className = "list-group-item list-group-item-action btn"
+                        div.innerHTML = `<div class="grid-item" width="100"><div class="alert alert-dark">
+                        <img src="./reddit(Trans).png"  id="redditL" width="75" class="btn" height="63" disabled></img>
+                        <a href=${element} target="_blank" >
+                        ${unique_ents[index]}
+                        </a>
+                    </div>
+                    </div>
+                
+                        `
+                        redditTableOutput.appendChild(div)
+                })
+                
+                    }
+
+                
+            })
+
+            Rbtn.addEventListener("click",(e)=>{
+                e.preventDefault();
+                redditOutput.style.display="none";
+                home.style.display="block";
+                loadingHeader_R.style.display="none";
             })
 
             goBack.addEventListener("click",(e)=>{

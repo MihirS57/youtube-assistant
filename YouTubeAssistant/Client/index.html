@@ -1,6 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <style>
+        .grid-container {
+          display: grid;
+          grid-template-columns: auto auto auto;
+          padding: 10px;
+        }
+        .grid-item{
+            margin:10px
+        }
+        
+        </style>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YouTube Assistant</title>
@@ -34,6 +45,7 @@
                 <hr>
                 <button class="btn btn-danger" id="btn1" disabled>Submit</button>
                 <button class="btn btn-danger ml-2" id="btn2" disabled>Analytics</button>
+                <img src="./reddit(Trans).png"  id="redditL" width="75" class="btn" height="63" disabled></img>
                 <hr>
             </form>
         </div>
@@ -44,13 +56,18 @@
             <div class="output mt-2" id="EntityOutput"></div>
             <hr>
             <div class="output mt-2" id="TableOutput"></div>
+            
         </div>
     </div>
     
         <div id="graph-output" style="display: none;">
-            <button id ="btn3" class="btn btn-danger mt-4">Go Back</button>
+            <button id ="btn3" class="btn btn-danger mt-4">Return</button>
             <hr>
-            <h2 class="text-danger text-center font-weight-bold" id="loadingHeader">Loading...</h2>
+            <div style="margin-left: 45%;margin-top: 75px;">
+            <img src="../1492.gif" class="text-center" id="loadingHeader" width="50" height="50" >
+             </div>
+        
+            <!-- <h2 class="text-danger text-center font-weight-bold" id="loadingHeader">Loading...</h2> -->
             <div id="graphs">
             <canvas id="donut-chart" width="300" height="300"></canvas>
             <hr>
@@ -58,7 +75,19 @@
             <hr>
             <canvas id="bar-chart" width="300" height="300"></canvas>
             </div>
+
         </div>
+        <div style="display: none;" id="redditOutput">
+            <button id ="Rtn" class="btn btn-danger mt-4">Return</button>
+            <div style="margin-left: 45%;margin-top: 75px;">
+                
+                <img src="../1492.gif" class="text-center" id="loadingHeader_R" width="50" height="50" >
+                
+            </div>
+            <hr>
+            <div class="output mt-2 grid-container text-center center" style="width: min-content; "  id="RedditTableOutput"></div>
+        </div>
+        
     </div>
     </div>
     <script src="https://js.pusher.com/7.0/pusher.min.js"></script>
