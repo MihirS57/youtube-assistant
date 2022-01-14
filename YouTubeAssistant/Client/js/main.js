@@ -554,16 +554,7 @@ document.addEventListener("DOMContentLoaded", () => {
         else {
             document.body.innerHTML = '<h2 class="text-center text-dark mt-5">Site is not Youtube</h2>'
         }
-        //Pusher.logToConsole = true;
-
-        var pusher = new Pusher('92ab853cd55fee798a51', {
-        cluster: 'ap2'
-        });
-        console.log(pusher)
-        var channel = pusher.subscribe('youtube-assistant');
-        channel.bind("VjOhj57ZkO0", function(data) {
-        console.log("YOOOOO",JSON.stringify(data));
-        });
+        
     })
 
 

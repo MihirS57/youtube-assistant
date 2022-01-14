@@ -3,13 +3,6 @@ const Video = require('../models/video')
 const entityList = require('./redditData')
 const Pusher = require("pusher");
 
-const pusher = new Pusher({
-  appId: "1329244",
-  key: "92ab853cd55fee798a51",
-  secret: "29eefa737a1916b7d6e9",
-  cluster: "ap2",
-  useTLS: true
-});
 
 exports.getRedditData = async (req,res,next) => {
     try{
@@ -87,12 +80,20 @@ exports.getTopResults = async (req,res,next) => {
         
         const video = await Video.findOne({videoId:videoId});
         if(!video){
-            return res.status(200)
-                    .json({
-                        success: true,
-                        message: "No results at this moment"
-                    })
-        }else{
+            const videoNew = await Video.create({videoId:videoId,query: []});
+            if(!videoNew){
+                return next(res.status(400).json({
+                    success: true,
+                    message: "Some error occured please try again later"
+                }));
+            }
+            return res.status(200).json({
+                success: true,
+                message:"No results at this moment..",
+                video: videoNew
+            });
+        }
+        else{
             let queries = video.query;
             let topQs = []
             for(let i = 0;i<queries.length && queries[i].count >= 5 && topQs.length < 5;i++){
