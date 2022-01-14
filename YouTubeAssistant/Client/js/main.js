@@ -319,6 +319,20 @@ document.addEventListener("DOMContentLoaded", () => {
                     return x
     }
 
+    const extractREntity = (list) => {
+        list.forEach((element,index) => {
+            if(element!=null)
+            {
+                element = element.slice(25+1,element.length)
+                console.log("Khatam kar bhar",element)
+                list[index] = element.substring(0,element.indexOf('/'))
+                console.log("Khatam kar bhar",list[index])
+            }       
+        });
+        list = list.filter(e=>e!=null)
+        return list
+    }
+
     chrome.tabs.query({ currentWindow: true, active: true }, async (tabs) => {
 
         let url = tabs[0].url
@@ -513,15 +527,19 @@ document.addEventListener("DOMContentLoaded", () => {
                     const content = await rawResponse.json();
                     console.log(content)
                     if(content){
-                        
+                        let urlR = content.urls.filter(e=>e!=null)
+                        console.log(urlR)
+                        let rList = extractREntity(content.urls)
+                        console.log(rList)
                         loadingHeader_R.style.display="none"
-                        content.urls.forEach((element,index)=> {
+                        
+                        urlR.forEach((element,index)=> {
                         let div = document.createElement("div")
                         //div.className = "list-group-item list-group-item-action btn"
                         div.innerHTML = `<div class="grid-item" width="100"><div class="alert alert-dark">
                         <img src="./reddit(Trans).png"  id="redditL" width="75" class="btn" height="63" disabled></img>
                         <a href=${element} target="_blank" >
-                        ${unique_ents[index]}
+                        ${rList[index]}
                         </a>
                     </div>
                     </div>
