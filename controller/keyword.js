@@ -1,6 +1,6 @@
 const { listenerCount } = require('../models/video');
 const Video = require('../models/video')
-
+const entityList = require('./redditData')
 const Pusher = require("pusher");
 
 const pusher = new Pusher({
@@ -11,7 +11,29 @@ const pusher = new Pusher({
   useTLS: true
 });
 
-
+exports.getRedditData = async (req,res,next) => {
+    try{
+        const {entList} = req.body
+        
+        console.log(entList)
+        const resp = await entityList(entList)
+        if(resp){
+            return res.status(200).json({
+                success:true,
+                urls: resp
+            });
+        }
+        res.status(200).json({
+            success:true,
+            urls: ['No urls found']
+        });
+    }catch(err){
+        res.status(400).json({
+            success:false,
+            error: err
+        })
+    }
+}
 
 exports.testing = async(req,res,next) => {
     try{

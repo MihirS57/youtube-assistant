@@ -238,7 +238,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const getYTComments = async (videoId) => {
         try {
-            let url = `https://youtube.googleapis.com/youtube/v3/commentThreads?part=snippet&videoId=${videoId}&key=AIzaSyAONA2mgIhFNn0_qDU6JUA7nLK3MruVeFw`
+            let url = `https://youtube.googleapis.com/youtube/v3/commentThreads?part=snippet&maxResults=100&videoId=${videoId}&key=AIzaSyAONA2mgIhFNn0_qDU6JUA7nLK3MruVeFw`
             const res = await fetch(url)
             const data = await res.json();
             //console.log(data.items)
