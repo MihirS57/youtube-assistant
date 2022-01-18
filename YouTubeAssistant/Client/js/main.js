@@ -393,7 +393,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
                     //console.log("Yo",selectedKeywords)
                     const submitSelectedKeywordButton = document.createElement("button");
-                    submitSelectedKeywordButton.setAttribute("class","btn btn-danger");
+                    submitSelectedKeywordButton.setAttribute("class","btn btn-outline-danger");
                     submitSelectedKeywordButton.innerHTML="Get Keyword";
                     submitSelectedKeywordButton.addEventListener("click",(e)=>{
                         const selectedKeywords = document.querySelectorAll("input[name='radio1']:checked");
@@ -428,7 +428,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     div.appendChild(col)
                 }
                 const submitSelectedEntityButton = document.createElement("button");
-                submitSelectedEntityButton.setAttribute("class","btn btn-danger");
+                submitSelectedEntityButton.setAttribute("class","btn btn-outline-danger");
                 submitSelectedEntityButton.innerHTML="Get Results";
                 submitSelectedEntityButton.addEventListener("click",(e)=>{
                     let entityArray = [];
@@ -477,7 +477,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         div.appendChild(col)
                     }
                     const submitSelectedKeywordButton = document.createElement("button");
-                    submitSelectedKeywordButton.setAttribute("class","btn btn-danger");
+                    submitSelectedKeywordButton.setAttribute("class","btn btn-outline-danger");
                     submitSelectedKeywordButton.innerHTML="Get Keyword";
                     submitSelectedKeywordButton.addEventListener("click",(_)=>{
                         const selectedKeywords = document.querySelectorAll("input[name='radio1']:checked");
