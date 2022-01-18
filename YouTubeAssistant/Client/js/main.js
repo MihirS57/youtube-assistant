@@ -25,6 +25,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const loadingHeader_R = document.getElementById("loadingHeader_R")
     const redditOutput = document.getElementById("redditOutput")
     const Rbtn = document.getElementById("Rtn");
+    const Neg = document.getElementById("Neg")
+    const Neu = document.getElementById("Neu")
+    const Pos = document.getElementById("Pos")
+    const senti_score = document.getElementById("senti_score")
     // Regex
     let regexReplace = /(<|>)/gi
     let regexSplit = /(v=| vi\/ | \/v\/ | youtu\.be\/ | \/embed\/)/
@@ -261,6 +265,18 @@ document.addEventListener("DOMContentLoaded", () => {
                     });
             const content = await rawResponse.json();
             console.log("Test",content)
+            let cumm = content.Cumulative
+            if (cumm <= 0.4 && cumm > -0.3){
+                        
+                        Neu.setAttribute("class","progress-bar-striped progress-bar-animated progress-bar bg-warning ")
+            }
+            else if (cumm > 0.4){
+                Pos.setAttribute("class","progress-bar-striped progress-bar-animated progress-bar")
+            }
+            else{
+                Neg.setAttribute("class","progress-bar-striped progress-bar-animated progress-bar bg-danger ")
+            }
+            senti_score.textContent = "Viewer Sentiment Score: "+cumm.toFixed(3)
             plotPieGraph_ForComments(["Neutral","Positive","Negative"],[content.Neutral,content.Positive,content.Negative])
             return x
         }
@@ -274,9 +290,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const cleanYTComments = (items) => {
         let comm = []
+        
         for(let i = 0;i<items.length;i++){
-            comm[i] = items[i].snippet.topLevelComment.snippet.textOriginal
+            let x = {
+                "text": items[i].snippet.topLevelComment.snippet.textOriginal,
+                "likes": items[i].snippet.topLevelComment.snippet.likeCount
+            }
+            comm[i] = x 
         }
+        console.log("Dict",comm)
         return comm;
     }
 

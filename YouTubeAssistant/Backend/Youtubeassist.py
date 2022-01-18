@@ -189,26 +189,34 @@ class spy:
             return (self.df, d)
 
     def comments_sentiment_analysis(self, comments = [], thresh=None):
+        print("Comments: ",comments)
         sid = SentimentIntensityAnalyzer()
         if thresh:
             l = []
             r = []
-
+            nLikes = 0
+            nComp = 0
             for x in range(0, len(comments)):
-                d = sid.polarity_scores(comments[x])
+                d = sid.polarity_scores(comments[x]["text"])
                 l.append(d)
-                if d["compound"] <= 0.4 and d["compound"] > -0.3:
+                nComp+=d["compound"]*(comments[x]["likes"]+1)
+                nLikes+=comments[x]["likes"]+1
+                print("Likes",comments[x]["likes"])
+                for y in range(0,comments[x]["likes"]+1):
+                    if d["compound"] <= 0.4 and d["compound"] > -0.3:
+                        
+                        r.append("Neutral")
+                    elif d["compound"] > 0.4:
+                        r.append("Positive")
 
-                    r.append("Neutral")
-                elif d["compound"] > 0.4:
-                    r.append("Positive")
+                    else:
+                        r.append("Negative")
 
-                else:
-                    r.append("Negative")
-
+            print("R: ",r)
             self.comment_dict = pd.Series(l)
             self.comment_label = pd.Series(r)
-
+            nCumm = (nComp)/nLikes
+            
         neutral = len(self.comment_dict[self.comment_label == "Neutral"])
         positive = len(self.comment_dict[self.comment_label == "Positive"])
         negative = len(self.comment_dict[self.comment_label == "Negative"])
@@ -217,7 +225,9 @@ class spy:
             "Neutral": neutral,
             "Positive": positive,
             "Negative": negative,
+            "Cumulative":nCumm
         }
+        print("D: ",d)
         return d
 
     # Vader Sentiment Analysis   #Thresh will be a tuple for specifying Range of Score for neutral
