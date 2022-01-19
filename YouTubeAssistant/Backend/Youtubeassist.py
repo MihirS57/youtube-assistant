@@ -203,10 +203,10 @@ class spy:
                 nLikes+=comments[x]["likes"]+1
                 print("Likes",comments[x]["likes"])
                 for y in range(0,comments[x]["likes"]+1):
-                    if d["compound"] <= 0.4 and d["compound"] > -0.3:
+                    if d["compound"] <= 0.2 and d["compound"] > -0.2:
                         
                         r.append("Neutral")
-                    elif d["compound"] > 0.4:
+                    elif d["compound"] > 0.2:
                         r.append("Positive")
 
                     else:

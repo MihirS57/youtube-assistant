@@ -29,6 +29,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const Neu = document.getElementById("Neu")
     const Pos = document.getElementById("Pos")
     const senti_score = document.getElementById("senti_score")
+    let cache_map = {}
     // Regex
     let regexReplace = /(<|>)/gi
     let regexSplit = /(v=| vi\/ | \/v\/ | youtu\.be\/ | \/embed\/)/
@@ -80,6 +81,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="text-dark font-weight-bold f-3 text-center">No match found..<br>Try something related to video!!!</br></span>
             `
         }
+        data.reverse()
         data.forEach(ele => {
             const li = document.createElement("li")
             li.className = "list-group-item list-group-item-action btn"
@@ -110,9 +112,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const getResponseByKeywordSubmit = async (id, keyWord, tab) => {
         //console.log(id,keyWord,tab)
-        const res = await fetch(`${baseLocalURL}/wild_card/${id}/${keyWord}`)
-        const data = await res.json();
-        displayTableData(data, tab)
+        if(cache_map[keyWord]){
+            displayTableData(cache_map[keyWord], tab)
+        }else{
+            const res = await fetch(`${baseLocalURL}/wild_card/${id}/${keyWord}`)
+            const data = await res.json();
+            cache_map[keyWord] = data
+            console.log("DICTIONARY",cache_map)
+            displayTableData(data, tab)
+
+        }
+        
     }
 
     const getResponseByEntity = async (id, query, tab) => {
@@ -130,6 +140,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const res = await fetch(`${baseLocalURL}/search_by_ents`, options);
         const data = await res.json();
+        console.log("Entity Data",query,data)
         displayTableData(data, tab)
     }
 
@@ -266,11 +277,11 @@ document.addEventListener("DOMContentLoaded", () => {
             const content = await rawResponse.json();
             console.log("Test",content)
             let cumm = content.Cumulative
-            if (cumm <= 0.4 && cumm > -0.3){
+            if (cumm <= 0.2 && cumm > -0.2){
                         
                         Neu.setAttribute("class","progress-bar-striped progress-bar-animated progress-bar bg-warning ")
             }
-            else if (cumm > 0.4){
+            else if (cumm > 0.2){
                 Pos.setAttribute("class","progress-bar-striped progress-bar-animated progress-bar")
             }
             else{
@@ -338,6 +349,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     const content = await rawResponse.json();
                     console.log(content)
                     let x = content.keyList
+                    console.log("XP",x)
                     return x
     }
 
