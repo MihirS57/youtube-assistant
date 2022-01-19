@@ -470,7 +470,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             btn.addEventListener("click", async (e) =>  {
                 e.preventDefault();
-                const inputValue = inputElement.value;
+                const inputValue = inputElement.value.toLowerCase();
                 if (inputValue == "") {
                     tableOutput.innerHTML = `
                     <span class="text-danger font-weight-bold f-2">Please enter some text to search...</span>
