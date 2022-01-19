@@ -1,7 +1,6 @@
 const { listenerCount } = require('../models/video');
 const Video = require('../models/video')
 const entityList = require('./redditData')
-const Pusher = require("pusher");
 
 
 exports.getRedditData = async (req,res,next) => {
@@ -212,11 +211,7 @@ exports.insertKey = async (req,res,next) => {
             keyList[i] = topQs[i].key
         }
 
-        if(JSON.stringify(keyList_Old) != JSON.stringify( keyList)){
-            pusher.trigger("youtube-assistant", videoId, {
-                message: keyList
-              });
-        }
+        
         return res.status(200).json({
             success: true,
             message:"Successfully key inserted/updated",
@@ -228,7 +223,7 @@ exports.insertKey = async (req,res,next) => {
         res.status(400)
         .json({
             success: false,
-            error: err
+            error: err.stack
         })
     }
 }

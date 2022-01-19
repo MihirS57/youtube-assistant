@@ -28,6 +28,7 @@
     <div class="container ">
         <div class="text-center">
         <nav class="navbar">
+            
         <!-- <div class="text-center text-light " style="margin: auto; font-size: 30px" href="#">
             YouTube Assistant
         </div> -->
@@ -35,20 +36,36 @@
         </nav>
         <img src="header1.jpeg" class="center"  width="350" height="70" >
         <div id="home">
-        <h6 class="text-center text-dark mt-3">Enter any keyword or click the suggested Entity</h6>
         <div class="form mt-2">
             <form>
-                <div class="form-group">
+                
+                <div class="input-group">
+                    <input type="search" id="keyword" class="form-control rounded" placeholder="Enter Keyword" aria-label="Search" aria-describedby="search-addon" />
+                    <button type="button" id="btn1" class="btn btn-outline-danger"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                      </svg> Search</button>
+                  </div>
+                <!-- <div class="form-group">
                     <input type="text" name="question" id="keyword" placeholder="Question..." class="form-control">
-                </div>
+                </div> -->
                 
                 <hr>
-                <button class="btn btn-outline-danger" id="btn1" disabled>Submit</button>
-                <button class="btn btn-outline-danger ml-2" id="btn2" disabled>Analytics</button>
-                <img src="./reddit(Trans).png"  id="redditL" width="75" class="btn" height="63" disabled></img>
+                <!-- <button class="btn btn-outline-danger" id="btn1" disabled>Submit</button> -->
+                
+                <button class="btn btn-outline-danger ml-2" id="btn2" disabled><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard-data" viewBox="0 0 16 16">
+                    <path d="M4 11a1 1 0 1 1 2 0v1a1 1 0 1 1-2 0v-1zm6-4a1 1 0 1 1 2 0v5a1 1 0 1 1-2 0V7zM7 9a1 1 0 0 1 2 0v3a1 1 0 1 1-2 0V9z"/>
+                    <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+                    <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+                  </svg> Analytics</button>
+                
+                  <button class="btn btn-outline-danger ml-2" id="redditL" disabled><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-reddit" viewBox="0 0 16 16">
+                    <path d="M6.167 8a.831.831 0 0 0-.83.83c0 .459.372.84.83.831a.831.831 0 0 0 0-1.661zm1.843 3.647c.315 0 1.403-.038 1.976-.611a.232.232 0 0 0 0-.306.213.213 0 0 0-.306 0c-.353.363-1.126.487-1.67.487-.545 0-1.308-.124-1.671-.487a.213.213 0 0 0-.306 0 .213.213 0 0 0 0 .306c.564.563 1.652.61 1.977.61zm.992-2.807c0 .458.373.83.831.83.458 0 .83-.381.83-.83a.831.831 0 0 0-1.66 0z"/>
+                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.828-1.165c-.315 0-.602.124-.812.325-.801-.573-1.9-.945-3.121-.993l.534-2.501 1.738.372a.83.83 0 1 0 .83-.869.83.83 0 0 0-.744.468l-1.938-.41a.203.203 0 0 0-.153.028.186.186 0 0 0-.086.134l-.592 2.788c-1.24.038-2.358.41-3.17.992-.21-.2-.496-.324-.81-.324a1.163 1.163 0 0 0-.478 2.224c-.02.115-.029.23-.029.353 0 1.795 2.091 3.256 4.669 3.256 2.577 0 4.668-1.451 4.668-3.256 0-.114-.01-.238-.029-.353.401-.181.688-.592.688-1.069 0-.65-.525-1.165-1.165-1.165z"/>
+                  </svg> Subreddits</button>
+                <!-- <img src="./reddit(Trans).png"  id="redditL" width="75" class="btn" height="63" disabled></img> -->
                 <hr>
                 <div class="text-center center">
-                    <h3 id="senti_score"></h3>
+                    <h5 id="senti_score" class="text-center text-dark mt-3">Calculating viewer sentiment scores...</h5>
                 </div>
                 <div id="resp_stats">
                     <div class="progress" style="height: 30px;">
@@ -64,8 +81,10 @@
         </div>
         
         <div id="output">
+            <h5 class="text-center text-dark mt-3">Top 5 keyword suggestions: </h5>
             <div class="output mt-2" id="SuggestionsOutput"></div>
             <hr>
+            <h5 class="text-center text-dark mt-3">Suggested Entities: </h5>
             <div class="output mt-2" id="EntityOutput"></div>
             <hr>
             <div class="output mt-2" id="TableOutput"></div>
@@ -74,7 +93,9 @@
     </div>
     
         <div id="graph-output" style="display: none;">
-            <button id ="btn3" class="btn btn-outline-danger mt-4">Return</button>
+            <button id ="btn3" class="btn btn-outline-danger mt-4"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-return-left" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M14.5 1.5a.5.5 0 0 1 .5.5v4.8a2.5 2.5 0 0 1-2.5 2.5H2.707l3.347 3.346a.5.5 0 0 1-.708.708l-4.2-4.2a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 8.3H12.5A1.5 1.5 0 0 0 14 6.8V2a.5.5 0 0 1 .5-.5z"/>
+              </svg> Return</button>
             <hr>
             <div style="margin-left: 45%;margin-top: 75px;">
             <img src="../1492.gif" class="text-center" id="loadingHeader" width="50" height="50" >
@@ -91,7 +112,9 @@
 
         </div>
         <div style="display: none;" id="redditOutput">
-            <button id ="Rtn" class="btn btn-outline-danger mt-4">Return</button>
+            <button id ="Rtn" class="btn btn-outline-danger mt-4"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-return-left" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M14.5 1.5a.5.5 0 0 1 .5.5v4.8a2.5 2.5 0 0 1-2.5 2.5H2.707l3.347 3.346a.5.5 0 0 1-.708.708l-4.2-4.2a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 8.3H12.5A1.5 1.5 0 0 0 14 6.8V2a.5.5 0 0 1 .5-.5z"/>
+              </svg> Return</button>
             <div style="margin-left: 45%;margin-top: 75px;">
                 
                 <img src="../1492.gif" class="text-center" id="loadingHeader_R" width="50" height="50" >

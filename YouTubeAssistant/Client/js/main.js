@@ -112,16 +112,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const getResponseByKeywordSubmit = async (id, keyWord, tab) => {
         //console.log(id,keyWord,tab)
-        if(cache_map[keyWord]){
-            displayTableData(cache_map[keyWord], tab)
-        }else{
-            const res = await fetch(`${baseLocalURL}/wild_card/${id}/${keyWord}`)
+        const res = await fetch(`${baseLocalURL}/wild_card/${id}/${keyWord}`)
             const data = await res.json();
-            cache_map[keyWord] = data
-            console.log("DICTIONARY",cache_map)
+            //cache_map[keyWord] = data
+            //console.log("DICTIONARY",cache_map)
             displayTableData(data, tab)
+        // if(cache_map[keyWord]){
+        //     displayTableData(cache_map[keyWord], tab)
+        // }else{
+        //     const res = await fetch(`${baseLocalURL}/wild_card/${id}/${keyWord}`)
+        //     const data = await res.json();
+        //     cache_map[keyWord] = data
+        //     console.log("DICTIONARY",cache_map)
+        //     displayTableData(data, tab)
 
-        }
+        // }
         
     }
 
@@ -406,7 +411,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     //console.log("Yo",selectedKeywords)
                     const submitSelectedKeywordButton = document.createElement("button");
                     submitSelectedKeywordButton.setAttribute("class","btn btn-outline-danger");
-                    submitSelectedKeywordButton.innerHTML="Get Keyword";
+                    submitSelectedKeywordButton.innerHTML="Search Keyword";
                     submitSelectedKeywordButton.addEventListener("click",(e)=>{
                         const selectedKeywords = document.querySelectorAll("input[name='radio1']:checked");
                         let temp =""
@@ -436,12 +441,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 for (let i = 0; i < 10; i++) {
                     if (unique_ents[i] == undefined) break;
                     const col = document.createElement("radio");
-                    col.innerHTML = `<label ><input type="checkbox" id=${i} name="radio" value="${unique_ents[i]}"><span style="padding:10px; margin:10;font-size:18px">${unique_ents[i]}</span></label>`
+                    col.innerHTML = `<label ><input type="checkbox" id=${i} class="btn btn-danger" name="radio" value="${unique_ents[i]}"><span style="padding:10px; margin:10;font-size:18px">${unique_ents[i]}</span></label>`
                     div.appendChild(col)
                 }
                 const submitSelectedEntityButton = document.createElement("button");
                 submitSelectedEntityButton.setAttribute("class","btn btn-outline-danger");
-                submitSelectedEntityButton.innerHTML="Get Results";
+                submitSelectedEntityButton.innerHTML="Search Entities";
+                                           
+                document.getElementById("myList");
                 submitSelectedEntityButton.addEventListener("click",(e)=>{
                     let entityArray = [];
                     e.preventDefault();
@@ -490,7 +497,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
                     const submitSelectedKeywordButton = document.createElement("button");
                     submitSelectedKeywordButton.setAttribute("class","btn btn-outline-danger");
-                    submitSelectedKeywordButton.innerHTML="Get Keyword";
+                    submitSelectedKeywordButton.innerHTML="Search Keywords";
                     submitSelectedKeywordButton.addEventListener("click",(_)=>{
                         const selectedKeywords = document.querySelectorAll("input[name='radio1']:checked");
                         let temp =""
