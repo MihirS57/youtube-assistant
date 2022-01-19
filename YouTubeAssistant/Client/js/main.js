@@ -112,21 +112,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const getResponseByKeywordSubmit = async (id, keyWord, tab) => {
         //console.log(id,keyWord,tab)
-        const res = await fetch(`${baseLocalURL}/wild_card/${id}/${keyWord}`)
+        
+        if(cache_map[keyWord]){
+            displayTableData(cache_map[keyWord], tab)
+        }else{
+            const res = await fetch(`${baseLocalURL}/wild_card/${id}/${keyWord}`)
             const data = await res.json();
-            //cache_map[keyWord] = data
-            //console.log("DICTIONARY",cache_map)
+            cache_map[keyWord] = data
+            console.log("DICTIONARY",cache_map)
             displayTableData(data, tab)
-        // if(cache_map[keyWord]){
-        //     displayTableData(cache_map[keyWord], tab)
-        // }else{
-        //     const res = await fetch(`${baseLocalURL}/wild_card/${id}/${keyWord}`)
-        //     const data = await res.json();
-        //     cache_map[keyWord] = data
-        //     console.log("DICTIONARY",cache_map)
-        //     displayTableData(data, tab)
 
-        // }
+        }
         
     }
 
