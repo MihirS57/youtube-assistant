@@ -35,6 +35,8 @@ document.addEventListener("DOMContentLoaded", () => {
     let regexSplit = /(v=| vi\/ | \/v\/ | youtu\.be\/ | \/embed\/)/
     let regexId = /[^0-9a-z\-*_$#!^]/i
     let regexUrlModify = /&.*/g
+    let TSstart,TSstop;
+    let rt = document.getElementById("response-time")
 
     const timeConvertor = (seconds) => {
         let str = ""
@@ -73,6 +75,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const displayTableData = (data, tab) => {
+        TSstop = Date.now();
+        console.log(TSstart,TSstop,(TSstop-TSstart))
+        rt.setAttribute("class","text-left")
+        rt.innerHTML = `Fetched results in <b> ${((TSstop-TSstart)/1000)}s </b>`
+        TSstop = 0;
+        TSstart = 0;
         tableOutput.innerHTML = ""
         const ul = document.createElement("ul")
         ul.className = "list-group"
@@ -112,7 +120,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const getResponseByKeywordSubmit = async (id, keyWord, tab) => {
         //console.log(id,keyWord,tab)
-        
         if(cache_map[keyWord]){
             displayTableData(cache_map[keyWord], tab)
         }else{
@@ -127,7 +134,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const getResponseByEntity = async (id, query, tab) => {
-        
+        TSstart = Date.now()
         const dataObject = {
             video_id: id, query: query
         }
@@ -280,7 +287,7 @@ document.addEventListener("DOMContentLoaded", () => {
             let cumm = content.Cumulative
             if (cumm <= 0.2 && cumm > -0.2){
                         
-                        Neu.setAttribute("class","progress-bar-striped progress-bar-animated progress-bar bg-warning ")
+                        Neu.setAttribute("class","progress-bar-striped progress-bar-animated progress-bar bg-warning text-dark")
             }
             else if (cumm > 0.2){
                 Pos.setAttribute("class","progress-bar-striped progress-bar-animated progress-bar")
@@ -409,6 +416,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     submitSelectedKeywordButton.setAttribute("class","btn btn-outline-danger");
                     submitSelectedKeywordButton.innerHTML="Search Keyword";
                     submitSelectedKeywordButton.addEventListener("click",(e)=>{
+                        TSstart = Date.now();
+                        rt.innerHTML = ""
                         const selectedKeywords = document.querySelectorAll("input[name='radio1']:checked");
                         let temp =""
                         selectedKeywords.forEach(ele=>{
@@ -446,6 +455,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                            
                 document.getElementById("myList");
                 submitSelectedEntityButton.addEventListener("click",(e)=>{
+                    rt.innerHTML = ""
                     let entityArray = [];
                     e.preventDefault();
                     const selectedEntities = document.querySelectorAll("input[name='radio']:checked");
@@ -469,6 +479,8 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             btn.addEventListener("click", async (e) =>  {
+                TSstart = Date.now();
+                rt.innerHTML = ""
                 e.preventDefault();
                 const inputValue = inputElement.value.toLowerCase();
                 if (inputValue == "") {
@@ -496,6 +508,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     submitSelectedKeywordButton.innerHTML="Search Keywords";
                     submitSelectedKeywordButton.addEventListener("click",(_)=>{
                         const selectedKeywords = document.querySelectorAll("input[name='radio1']:checked");
+                        TSstart = Date.now();
+                        rt.innerHTML = ""
                         let temp =""
                         selectedKeywords.forEach(ele=>{
                             temp = temp+ele.value+" "
