@@ -125,9 +125,25 @@ document.addEventListener("DOMContentLoaded", () => {
         }else{
             const res = await fetch(`${baseLocalURL}/wild_card/${id}/${keyWord}`)
             const data = await res.json();
-            cache_map[keyWord] = data
-            console.log("DICTIONARY",cache_map)
-            displayTableData(data, tab)
+            console.log("Search Data: ",data)
+            let keywordExists = false
+            
+            for(let i=0;i<data.length;i++){
+                if(data[i].text.includes(keyWord)){
+                    cache_map[keyWord] = data
+                    keywordExists = true;
+                    break;
+                }
+            }
+            if(keywordExists){
+                let x = await insertKey(id,keyWord)
+                console.log("Keyword Logged",x)
+                console.log("DICTIONARY",cache_map)
+                displayTableData(data, tab)
+            }else{
+                displayTableData([], tab)
+            }
+            
 
         }
         
@@ -492,17 +508,17 @@ document.addEventListener("DOMContentLoaded", () => {
                     tableOutput.innerHTML = `<br>
                     <img src="../1492.gif" class="center"  width="50" height="50" >`
                     
-                    let x = await insertKey(id,inputValue)
-                    console.log("X: ",x)
+                    //let x = await insertKey(id,inputValue)
+                    //console.log("X: ",x)
                     let div = document.createElement("div")
                     div.setAttribute("class", "row ml-2")
                     div.innerHTML = ""
-                    for (let i = 0; i < 5; i++) {
-                        if (x[i] == undefined) break;
-                        const col = document.createElement("radio");
-                        col.innerHTML = `<label ><input type="checkbox" id=${i} name="radio1" value="${x[i]}"><span style="padding:10px; margin:10;font-size:18px">${x[i]}</span></label>`
-                        div.appendChild(col)
-                    }
+                    // for (let i = 0; i < 5; i++) {
+                    //     if (x[i] == undefined) break;
+                    //     const col = document.createElement("radio");
+                    //     col.innerHTML = `<label ><input type="checkbox" id=${i} name="radio1" value="${x[i]}"><span style="padding:10px; margin:10;font-size:18px">${x[i]}</span></label>`
+                    //     div.appendChild(col)
+                    // }
                     const submitSelectedKeywordButton = document.createElement("button");
                     submitSelectedKeywordButton.setAttribute("class","btn btn-outline-danger");
                     submitSelectedKeywordButton.innerHTML="Search Keywords";
@@ -518,11 +534,19 @@ document.addEventListener("DOMContentLoaded", () => {
                         <img src="../1492.gif" class="center"  width="50" height="50" >`
                         getResponseByKeywordSubmit(id,temp,tabs[0])
                         
+                        
                     })
                     div.appendChild(submitSelectedKeywordButton)
                     suggestionsOutput.innerHTML = ''
                     suggestionsOutput.appendChild(div)
                     getResponseByKeywordSubmit(id, inputValue, tabs[0])
+                    const tKeys = getTopKeywords(id)
+                    for (let i = 0; i < 5; i++) {
+                        if (tKeys[i] == undefined) break;
+                        const col = document.createElement("radio");
+                        col.innerHTML = `<label ><input type="checkbox" id=${i} name="radio1" value="${tKeys[i]}"><span style="padding:10px; margin:10;font-size:18px">${tKeys[i]}</span></label>`
+                        div.appendChild(col)
+                    }
                 }
             })
 
