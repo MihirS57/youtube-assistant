@@ -162,7 +162,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 labels: key,
                 datasets: [
                     {
-                        label: "Entity-Frequncy",
+                        label: "Entity-Frequency",
                         backgroundColor: [
                             'rgb(201, 203, 207)',
                             'rgb(54, 162, 235)',
@@ -378,8 +378,8 @@ document.addEventListener("DOMContentLoaded", () => {
     chrome.tabs.query({ currentWindow: true, active: true }, async (tabs) => {
 
         let url = tabs[0].url
-        //if (url.includes("youtube") || url.includes("youtu.be")) {
-        if (1) {
+        if (url.includes("youtube") || url.includes("youtu.be")) {
+        //if (1) {
 
             //continue
             id = url.replace(regexReplace).split(regexSplit)[2]
