@@ -5,7 +5,7 @@ from fastapi import Body, FastAPI
 from Youtubeassist import spy
 import pandas as pd
 from fastapi.middleware.cors import CORSMiddleware
-
+from senti_analyser import sentiment_analysis
 app = FastAPI()
 
 origins = ['*']
@@ -90,4 +90,9 @@ def get_comment_sentiment(video_id: str,comm: Comm):
     k = obj.comments_sentiment_analysis(comm.comments,(-0.2,0.2))
     print(k)
     return k
+
+@app.post("/youtubeassist/sentiment_only/")
+def get_sentiment(comm: Comm):
+    sentiments = sentiment_analysis(comm.comments)
+    return sentiments
     

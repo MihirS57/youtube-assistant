@@ -1,3 +1,4 @@
+const {getKey} = require('./fetchKey');
 document.addEventListener("DOMContentLoaded", () => {
     // GlobalVariables
     let id;
@@ -71,7 +72,76 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         catch(err){
             console.log(err)
+            return {"Negative":0,"Positive":0,"Neutral":0}
         }
+    }
+
+    //Search Result Suggestion Part Block
+    const displayYTResultData = (data, tab, process_update) => {
+        
+        rt.setAttribute("class","text-left")
+        rt.innerHTML = `Status: <b> ${process_update} </b>`
+        
+        tableOutput.innerHTML = ""
+        const ul = document.createElement("ul")
+        ul.className = "list-group"
+        if (data.length == 0) {
+            tableOutput.innerHTML = `
+            <span class="text-dark font-weight-bold f-3 text-center">No match found..<br>Try something related to video!!!</br></span>
+            `
+        }
+        //data.reverse()
+        data.forEach(ele => {
+            const li = document.createElement("li")
+            li.className = "list-group-item list-group-item-action btn"
+            li.innerHTML = `
+            
+            <div class="row">
+                <div class="col-md-1"></div>
+                <img src=${ele.thumbnail} class="text-center" id="loadingHeader" width="150" height="100" >
+                <div class="col-md-1"></div>
+            </div>
+            <div class="row">
+                <div class="col-md-1"></div>
+                <div class="col-md-10"><span class="font-weight-bold">Thumbnail</span>: <span>${ele.thumbnail}</span> </div>
+                <div class="col-md-1"></div>
+            </div>
+            <div class="row">
+                <div class="col-md-1"></div>
+                <div class="col-md-10"><span class="font-weight-bold">Title</span>: <span>${ele.title}</span> </div>
+                <div class="col-md-1"></div>
+            </div> 
+            <div class="row">
+                <div class="col-md-1"></div>
+                <div class="col-sm-5"><span class="font-weight-bold">Channel</span>: <span>${ele.channel}</span> </div>
+            
+                <div class="col-md-1"></div>
+            </div>
+            <div class="row">
+                <div class="col-md-1"></div>
+                <div class="col-md-10"><span class="font-weight-bold">Video ID</span>: <span>${ele.videoID}</span> </div>
+                <div class="col-md-1"></div>
+            </div>
+            <div class="row">
+                <div class="col-md-1"></div>
+                <div class="col-md-10"><span class="font-weight-bold">User Sentiments</span>: <span>${ele.comment_sentiment}</span> </div>
+                <div class="col-md-1"></div>
+            </div>
+            <div class="row">
+                <div class="col-md-1"></div>
+                <div class="col-md-10"><span class="font-weight-bold">Video Sentiments</span>: <span>${ele.video_sentiment}</span> </div>
+                <div class="col-md-1"></div>
+            </div>
+            `
+            li.addEventListener("click", (e) => {
+                e.preventDefault()
+                if(process_update.includes("Complete")){
+                    chrome.tabs.update(tab.id, { url:  `https://www.youtube.com/watch?v=${ele.videoID}` })
+                }
+            })
+            ul.appendChild(li)
+        })
+        tableOutput.appendChild(ul)
     }
 
     const displayTableData = (data, tab) => {
@@ -126,23 +196,24 @@ document.addEventListener("DOMContentLoaded", () => {
             const res = await fetch(`${baseLocalURL}/wild_card/${id}/${keyWord}`)
             const data = await res.json();
             console.log("Search Data: ",data)
-            let keywordExists = false
-            
-            for(let i=0;i<data.length;i++){
-                if(data[i].text.includes(keyWord)){
-                    cache_map[keyWord] = data
-                    keywordExists = true;
-                    break;
-                }
-            }
-            if(keywordExists){
-                let x = await insertKey(id,keyWord)
-                console.log("Keyword Logged",x)
-                console.log("DICTIONARY",cache_map)
-                displayTableData(data, tab)
-            }else{
-                displayTableData([], tab)
-            }
+            //let keywordExists = false
+            cache_map[keyWord] = data
+            displayTableData(data, tab)
+            // for(let i=0;i<data.length;i++){
+            //     if(data[i].text.includes(keyWord)){
+            //         
+            //         keywordExists = true;
+            //         break;
+            //     }
+            // }
+            // if(keywordExists){
+            //     //let x = await insertKey(id,keyWord)
+            //     //console.log("Keyword Logged",x)
+            //     console.log("DICTIONARY",cache_map)
+               
+            // }else{
+            //     displayTableData([], tab)
+            // }
             
 
         }
@@ -280,8 +351,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const getYTComments = async (videoId) => {
+        
         try {
-            let url = `https://youtube.googleapis.com/youtube/v3/commentThreads?part=snippet&maxResults=100&videoId=${videoId}&key=AIzaSyAONA2mgIhFNn0_qDU6JUA7nLK3MruVeFw`
+            let url = `https://youtube.googleapis.com/youtube/v3/commentThreads?part=snippet&maxResults=100&videoId=${videoId}&key=${getKey}`
             const res = await fetch(url)
             const data = await res.json();
             //console.log(data.items)
@@ -320,6 +392,49 @@ document.addEventListener("DOMContentLoaded", () => {
             suggestionsOutput.innerHTML = `<h3 class="text-center">Sorry ${err}</h3>
             <h3 class="text-center">Try another video</h3>`
             return null
+        }
+    }
+
+    const getYTCommentsForList = async (videoId) => {
+        try {
+            let url = `https://youtube.googleapis.com/youtube/v3/commentThreads?part=snippet&maxResults=100&videoId=${videoId}&key=${getKey}`
+            const res = await fetch(url)
+            const data = await res.json();
+            let x = data.items
+            x = cleanYTComments(x)
+            let y = {comments: x}
+            
+            const rawResponse = await fetch(`${baseLocalURL}/sentiment_only/`, {
+                        method: 'POST',
+                        headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(y)
+                    });
+            const content = await rawResponse.json();
+            console.log("Test",content)
+            let cumm = content.Cumulative
+            //senti_score.textContent = "Viewer Sentiment Score: "+cumm.toFixed(3)
+            if (cumm <= 0.2 && cumm > -0.2){
+                console.log(cumm,"Neutral")
+                return "Neutral : "+cumm.toFixed(3)
+            }
+            else if (cumm > 0.2){
+                console.log(cumm,"Positive")
+                return "Positive : "+cumm.toFixed(3)
+            }
+            else{
+                console.log(cumm,"Negative")
+                return "Negative : "+cumm.toFixed(3)
+            }
+            
+        }
+        catch (err) {
+            console.log(err)
+            suggestionsOutput.innerHTML = `<h3 class="text-center">Sorry ${err}</h3>
+            <h3 class="text-center">Try another video</h3>`
+            return "Unmeasurable"
         }
     }
 
@@ -377,6 +492,92 @@ document.addEventListener("DOMContentLoaded", () => {
                     return x
     }
 
+    //Search Result Suggestion Part Block
+    const getYTSearchResults = async (searchKeyword,tab) => {
+        const rawResponse = await fetch(`https://youtube.googleapis.com/youtube/v3/search?part=snippet&maxResults=5&q=${searchKeyword}&key=${getKey}`, {
+                        method: 'GET',
+                        headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                        },
+                        
+                    });
+                    const contentList = await rawResponse.json();
+                    console.log(contentList)
+                    let resultList = [],sortedResult = []
+                    var worker;
+                    let cntVA = 0,cntCA = 0;
+                    let list = contentList.items
+                    for(let i = 0;i<list.length;i++){
+                        let dic = {}
+                        console.log(list[i].snippet.title)
+                        dic["videoID"] = list[i].id.videoId
+                        resultList.push(dic)
+                        resultList[i].title = list[i].snippet.title
+                        resultList[i].channel = list[i].snippet.channelTitle
+                        resultList[i].thumbnail = list[i].snippet.thumbnails.default.url
+
+                        worker = new Worker('/js/worker.js')
+                        worker.postMessage({"id": dic["videoID"],"ind": i})
+                        worker.addEventListener('message', function(e) {
+                            console.log("Worker",e.data);
+                            cntVA++;
+                            let ind = e.data.ind
+                            let data = e.data.data
+                            displayYTResultData(resultList,tab,"Analysing Video Sentiments for "+resultList[ind].title)
+                            if(data.Positive>data.Negative && data.Positive>data.Neutral){
+                                resultList[ind].video_sentiment = "Positive"
+                            }else if(data.Negative>data.Positive && data.Negative>data.Neutral){
+                                resultList[ind].video_sentiment = "Negative"
+                            }else{
+                                if(data.Neutral == 0){
+                                    resultList[ind].video_sentiment = "Unmeasurable"
+                                }else{
+                                    resultList[ind].video_sentiment = "Neutral"
+                                }
+                            }
+                            displayYTResultData(resultList,tab,`Analysed Video Sentiments for ${resultList[ind].title}`)
+                            if(cntVA == 5 && cntCA == 5){
+                                rt.setAttribute("class","text-left")
+                                rt.innerHTML = `Status: <b> Sorting the results... </b>`
+                                sortYTSearchResult(resultList,tab)
+                            }
+                        })
+                        displayYTResultData(resultList,tab,"Analysing Comment Sentiments for "+resultList[i].title)
+                        resultList[i].comment_sentiment = "Calculating..."  
+                        await getYTCommentsForList(dic["videoID"]).then((result)=>{
+                            cntCA++;
+                            resultList[i].comment_sentiment = result
+                        })  
+                                                          
+                        console.log("Senti",resultList[i].comment_sentiment)
+                        displayYTResultData(resultList,tab,"Analysed Comment Sentiments for "+resultList[i].title)
+                    }
+                    
+                    console.log("YT LIST",resultList)
+                    displayYTResultData(resultList,tab,"Processing...")
+                    
+    }
+
+    //Search Result Suggestion Part Block
+    const sortYTSearchResult = (resultList,tab) => {
+        let listLen = resultList.length
+        let sortedList = [],vs = ['Positive','Neutral','Negative','Unmeasurable'], cs = ['Positive','Neutral','Negative'];
+        let cv = 0, cc=0,sl = 0;
+        for(let i = 0;i<vs.length;i++){
+            for(let j = 0;j<cs.length;j++){
+                for(let k = 0;k<listLen;k++){
+                    if(resultList[k].video_sentiment == vs[i] && 
+                        resultList[k].comment_sentiment.includes(cs[j])){
+                            sortedList[sl] = resultList[k]
+                            sl++;
+                        }
+                }
+            }
+        }
+        displayYTResultData(sortedList,tab,"Complete, refer suggestions below...")
+    }
+
     const extractREntity = (list) => {
         list.forEach((element,index) => {
             if(element!=null)
@@ -395,9 +596,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
         let url = tabs[0].url
         if (url.includes("youtube") || url.includes("youtu.be")) {
-        //if (1) {
 
-            //continue
+            //Search Result Suggestion Part Block
+            if(url.includes("search_query=")){
+                let q = url.substring(url.indexOf("=")+1)
+                getYTSearchResults(q,tabs[0])
+            }else{
+            
+            //Normal
             id = url.replace(regexReplace).split(regexSplit)[2]
             if (id != undefined) id = id.split(regexId)[0]
             entityOutput.innerHTML = `
@@ -508,17 +714,17 @@ document.addEventListener("DOMContentLoaded", () => {
                     tableOutput.innerHTML = `<br>
                     <img src="../1492.gif" class="center"  width="50" height="50" >`
                     
-                    //let x = await insertKey(id,inputValue)
-                    //console.log("X: ",x)
+                    let x = await insertKey(id,inputValue)
+                    console.log("X: ",x)
                     let div = document.createElement("div")
                     div.setAttribute("class", "row ml-2")
                     div.innerHTML = ""
-                    // for (let i = 0; i < 5; i++) {
-                    //     if (x[i] == undefined) break;
-                    //     const col = document.createElement("radio");
-                    //     col.innerHTML = `<label ><input type="checkbox" id=${i} name="radio1" value="${x[i]}"><span style="padding:10px; margin:10;font-size:18px">${x[i]}</span></label>`
-                    //     div.appendChild(col)
-                    // }
+                    for (let i = 0; i < 5; i++) {
+                        if (x[i] == undefined) break;
+                        const col = document.createElement("radio");
+                        col.innerHTML = `<label ><input type="checkbox" id=${i} name="radio1" value="${x[i]}"><span style="padding:10px; margin:10;font-size:18px">${x[i]}</span></label>`
+                        div.appendChild(col)
+                    }
                     const submitSelectedKeywordButton = document.createElement("button");
                     submitSelectedKeywordButton.setAttribute("class","btn btn-outline-danger");
                     submitSelectedKeywordButton.innerHTML="Search Keywords";
@@ -540,13 +746,13 @@ document.addEventListener("DOMContentLoaded", () => {
                     suggestionsOutput.innerHTML = ''
                     suggestionsOutput.appendChild(div)
                     getResponseByKeywordSubmit(id, inputValue, tabs[0])
-                    const tKeys = getTopKeywords(id)
-                    for (let i = 0; i < 5; i++) {
-                        if (tKeys[i] == undefined) break;
-                        const col = document.createElement("radio");
-                        col.innerHTML = `<label ><input type="checkbox" id=${i} name="radio1" value="${tKeys[i]}"><span style="padding:10px; margin:10;font-size:18px">${tKeys[i]}</span></label>`
-                        div.appendChild(col)
-                    }
+                    // const tKeys = getTopKeywords(id)
+                    // for (let i = 0; i < 5; i++) {
+                    //     if (tKeys[i] == undefined) break;
+                    //     const col = document.createElement("radio");
+                    //     col.innerHTML = `<label ><input type="checkbox" id=${i} name="radio1" value="${tKeys[i]}"><span style="padding:10px; margin:10;font-size:18px">${tKeys[i]}</span></label>`
+                    //     div.appendChild(col)
+                    // }
                 }
             })
 
@@ -559,6 +765,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 e.preventDefault();
             
                 const graphData = await getGraphData(id);
+                console.log("Graph Data",graphData)
                 let sentimentKeyArray=[]
                 let sentimentValueArray=[]
                 let countKeyArray=[]
@@ -644,11 +851,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
             
         }
+    }
         else {
             document.body.innerHTML = '<h2 class="text-center text-dark mt-5">Site is not Youtube</h2>'
         }
         
     })
+    
 
 
 })
