@@ -29,7 +29,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const Neu = document.getElementById("Neu")
     const Pos = document.getElementById("Pos")
     const senti_score = document.getElementById("senti_score")
-    let cache_map = {}
+    let cache_map = {},vidList_map = {}
     // Regex
     let regexReplace = /(<|>)/gi
     let regexSplit = /(v=| vi\/ | \/v\/ | youtu\.be\/ | \/embed\/)/
@@ -67,12 +67,25 @@ document.addEventListener("DOMContentLoaded", () => {
         try{
         const res  = await fetch(`${baseLocalURL}/sentiment/${id}`)
         const data = await res.json()
+        console.log("Graph Data: ",data.label_stats)
         return data
         }
         catch(err){
             console.log(err)
             return {"Negative":0,"Positive":0,"Neutral":0}
         }
+    }
+
+    const determineCategory = (score) => {
+        if (score <= 0.2 && score > -0.2){
+                return "Neutral : "+score
+            }
+            else if (score > 0.2){
+                return "Positive : "+score
+            }
+            else{
+                return "Negative : "+score
+            }
     }
 
     //Search Result Suggestion Part Block
@@ -89,20 +102,18 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="text-dark font-weight-bold f-3 text-center">No match found..<br>Try something related to video!!!</br></span>
             `
         }
+        let cs;
+        
         //data.reverse()
         data.forEach(ele => {
             const li = document.createElement("li")
             li.className = "list-group-item list-group-item-action btn"
+            cs = determineCategory(ele.comment_sentiment)
             li.innerHTML = `
             
             <div class="row">
                 <div class="col-md-1"></div>
                 <img src=${ele.thumbnail} class="text-center" id="loadingHeader" width="150" height="100" >
-                <div class="col-md-1"></div>
-            </div>
-            <div class="row">
-                <div class="col-md-1"></div>
-                <div class="col-md-10"><span class="font-weight-bold">Thumbnail</span>: <span>${ele.thumbnail}</span> </div>
                 <div class="col-md-1"></div>
             </div>
             <div class="row">
@@ -113,7 +124,6 @@ document.addEventListener("DOMContentLoaded", () => {
             <div class="row">
                 <div class="col-md-1"></div>
                 <div class="col-sm-5"><span class="font-weight-bold">Channel</span>: <span>${ele.channel}</span> </div>
-            
                 <div class="col-md-1"></div>
             </div>
             <div class="row">
@@ -123,7 +133,7 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
             <div class="row">
                 <div class="col-md-1"></div>
-                <div class="col-md-10"><span class="font-weight-bold">User Sentiments</span>: <span>${ele.comment_sentiment}</span> </div>
+                <div class="col-md-10"><span class="font-weight-bold">User Sentiments</span>: <span>${cs}</span> </div>
                 <div class="col-md-1"></div>
             </div>
             <div class="row">
@@ -136,7 +146,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 e.preventDefault()
                 if(process_update.includes("Complete") && ele.video_sentiment != "Unmeasurable"){
                     chrome.tabs.update(tab.id, { url:  `https://www.youtube.com/watch?v=${ele.videoID}` })
-                    videoExplore(ele.videoID,tab)
+                    videoExplore(ele.videoID,
+                        tab,
+                        ele.comment_sentiment,
+                        ele.dic_comm_senti,
+                        ele.dic_vid_senti,
+                        ele.dic_label_stats)
                 }
             })
             ul.appendChild(li)
@@ -196,25 +211,8 @@ document.addEventListener("DOMContentLoaded", () => {
             const res = await fetch(`${baseLocalURL}/wild_card/${id}/${keyWord}`)
             const data = await res.json();
             console.log("Search Data: ",data)
-            //let keywordExists = false
             cache_map[keyWord] = data
             displayTableData(data, tab)
-            // for(let i=0;i<data.length;i++){
-            //     if(data[i].text.includes(keyWord)){
-            //         
-            //         keywordExists = true;
-            //         break;
-            //     }
-            // }
-            // if(keywordExists){
-            //     //let x = await insertKey(id,keyWord)
-            //     //console.log("Keyword Logged",x)
-            //     console.log("DICTIONARY",cache_map)
-               
-            // }else{
-            //     displayTableData([], tab)
-            // }
-            
 
         }
         
@@ -414,19 +412,20 @@ document.addEventListener("DOMContentLoaded", () => {
             const content = await rawResponse.json();
             console.log("Test",content)
             let cumm = content.Cumulative
+            return {comm_senti: cumm.toFixed(3), dic_comm_senti: content}
             //senti_score.textContent = "Viewer Sentiment Score: "+cumm.toFixed(3)
-            if (cumm <= 0.2 && cumm > -0.2){
-                console.log(cumm,"Neutral")
-                return "Neutral : "+cumm.toFixed(3)
-            }
-            else if (cumm > 0.2){
-                console.log(cumm,"Positive")
-                return "Positive : "+cumm.toFixed(3)
-            }
-            else{
-                console.log(cumm,"Negative")
-                return "Negative : "+cumm.toFixed(3)
-            }
+            // if (cumm <= 0.2 && cumm > -0.2){
+            //     console.log(cumm,"Neutral")
+            //     return cumm.toFixed(3)
+            // }
+            // else if (cumm > 0.2){
+            //     console.log(cumm,"Positive")
+            //     return cumm.toFixed(3)
+            // }
+            // else{
+            //     console.log(cumm,"Negative")
+            //     return +cumm.toFixed(3)
+            // }
             
         }
         catch (err) {
@@ -504,7 +503,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     });
                     const contentList = await rawResponse.json();
                     console.log(contentList)
-                    let resultList = [],sortedResult = []
+                    let resultList = []
                     var worker;
                     let cntVA = 0,cntCA = 0;
                     let list = contentList.items
@@ -517,6 +516,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         resultList[i].channel = list[i].snippet.channelTitle
                         resultList[i].thumbnail = list[i].snippet.thumbnails.default.url
 
+                        console.log("Result List",resultList)
                         worker = new Worker('/js/worker.js')
                         worker.postMessage({"id": dic["videoID"],"ind": i})
                         worker.addEventListener('message', function(e) {
@@ -525,29 +525,37 @@ document.addEventListener("DOMContentLoaded", () => {
                             let ind = e.data.ind
                             let data = e.data.data
                             displayYTResultData(resultList,tab,"Analysing Video Sentiments for "+resultList[ind].title)
+                            resultList[ind].dic_vid_senti = {
+                                "Positive": data.Positive,
+                                "Negative": data.Negative,
+                                "Neutral": data.Neutral
+                            }
+                            resultList[ind].dic_label_stats = data.label_stats
                             if(data.Positive>data.Negative && data.Positive>data.Neutral){
-                                resultList[ind].video_sentiment = "Positive : "+data.Positive
+                                resultList[ind].video_sentiment = "Positive"
                             }else if(data.Negative>data.Positive && data.Negative>data.Neutral){
-                                resultList[ind].video_sentiment = "Negative : "+data.Negative
+                                resultList[ind].video_sentiment = "Negative"
                             }else{
                                 if(data.Neutral == 0){
                                     resultList[ind].video_sentiment = "Unmeasurable"
                                 }else{
-                                    resultList[ind].video_sentiment = "Neutral : "+data.Neutral
+                                    resultList[ind].video_sentiment = "Neutral"
                                 }
                             }
                             displayYTResultData(resultList,tab,`Analysed Video Sentiments for ${resultList[ind].title}`)
                             if(cntVA == 5 && cntCA == 5){
-                                rt.setAttribute("class","text-left")
-                                rt.innerHTML = `Status: <b> Sorting the results... </b>`
-                                sortYTSearchResult(resultList,tab)
+                                displayYTResultData(resultList,tab,"Complete, refer suggestions below...")
+                                // rt.setAttribute("class","text-left")
+                                // rt.innerHTML = `Status: <b> Sorting the results... </b>`
+                                // sortYTSearchResult(resultList,tab)
                             }
                         })
                         displayYTResultData(resultList,tab,"Analysing Comment Sentiments for "+resultList[i].title)
                         resultList[i].comment_sentiment = "Calculating..."  
                         await getYTCommentsForList(dic["videoID"]).then((result)=>{
                             cntCA++;
-                            resultList[i].comment_sentiment = result
+                            resultList[i].comment_sentiment = result.comm_senti
+                            resultList[i].dic_comm_senti = result.dic_comm_senti
                         })  
                                                           
                         console.log("Senti",resultList[i].comment_sentiment)
@@ -858,7 +866,7 @@ document.addEventListener("DOMContentLoaded", () => {
         
     })
 
-    const videoExplore = async (id,tab) => {
+    const videoExplore = async (id,tab,cumm,dic_comm_senti,dic_vid_senti,dic_label_stats) => {
         entityOutput.innerHTML = `
             VideoId : <span class="text-danger font-weight-bold">${id}</span>
             <br>
@@ -866,6 +874,26 @@ document.addEventListener("DOMContentLoaded", () => {
             <br>
             <img src="../1492.gif" class="center"  width="50" height="50" >
             `
+
+            //console.log(await getYTComments(id))
+
+            console.log("Cummulative",cumm)
+            console.log("Comm Sentiments",dic_comm_senti)
+            console.log("Vid Sentiments",dic_vid_senti)
+            console.log("Label Stats",dic_label_stats)
+
+            if (cumm <= 0.2 && cumm > -0.2){
+                Neu.setAttribute("class","progress-bar-striped progress-bar-animated progress-bar bg-warning text-dark")
+            }
+            else if (cumm > 0.2){
+                Pos.setAttribute("class","progress-bar-striped progress-bar-animated progress-bar")
+            }
+            else{
+                Neg.setAttribute("class","progress-bar-striped progress-bar-animated progress-bar bg-danger ")
+            }
+            senti_score.textContent = "Viewer Sentiment Score: "+cumm
+            plotPieGraph_ForComments(["Neutral","Positive","Negative"],[dic_comm_senti.Neutral,dic_comm_senti.Positive,dic_comm_senti.Negative])
+
             const topKeywords = await getTopKeywords(id);
             console.log("1 "+topKeywords)
             if(topKeywords) {
@@ -1015,8 +1043,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 e.preventDefault();
             
-                const graphData = await getGraphData(id);
-                console.log("Graph Data",graphData)
+                
+                let graphData = {
+                    "Positive": dic_vid_senti.Positive,
+                    "Neutral": dic_vid_senti.Neutral,
+                    "Negative": dic_vid_senti.Negative,
+                    label_stats: dic_label_stats
+                }
+                console.log("Graph Data Cache",graphData)
                 let sentimentKeyArray=[]
                 let sentimentValueArray=[]
                 let countKeyArray=[]
