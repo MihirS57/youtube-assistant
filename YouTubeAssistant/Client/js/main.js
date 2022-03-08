@@ -134,8 +134,9 @@ document.addEventListener("DOMContentLoaded", () => {
             `
             li.addEventListener("click", (e) => {
                 e.preventDefault()
-                if(process_update.includes("Complete")){
+                if(process_update.includes("Complete") && ele.video_sentiment != "Unmeasurable"){
                     chrome.tabs.update(tab.id, { url:  `https://www.youtube.com/watch?v=${ele.videoID}` })
+                    videoExplore(ele.videoID,tab)
                 }
             })
             ul.appendChild(li)
@@ -525,14 +526,14 @@ document.addEventListener("DOMContentLoaded", () => {
                             let data = e.data.data
                             displayYTResultData(resultList,tab,"Analysing Video Sentiments for "+resultList[ind].title)
                             if(data.Positive>data.Negative && data.Positive>data.Neutral){
-                                resultList[ind].video_sentiment = "Positive"
+                                resultList[ind].video_sentiment = "Positive : "+data.Positive
                             }else if(data.Negative>data.Positive && data.Negative>data.Neutral){
-                                resultList[ind].video_sentiment = "Negative"
+                                resultList[ind].video_sentiment = "Negative : "+data.Negative
                             }else{
                                 if(data.Neutral == 0){
                                     resultList[ind].video_sentiment = "Unmeasurable"
                                 }else{
-                                    resultList[ind].video_sentiment = "Neutral"
+                                    resultList[ind].video_sentiment = "Neutral : "+data.Neutral
                                 }
                             }
                             displayYTResultData(resultList,tab,`Analysed Video Sentiments for ${resultList[ind].title}`)
@@ -566,7 +567,7 @@ document.addEventListener("DOMContentLoaded", () => {
         for(let i = 0;i<vs.length;i++){
             for(let j = 0;j<cs.length;j++){
                 for(let k = 0;k<listLen;k++){
-                    if(resultList[k].video_sentiment == vs[i] && 
+                    if(resultList[k].video_sentiment.includes(vs[i]) && 
                         resultList[k].comment_sentiment.includes(cs[j])){
                             sortedList[sl] = resultList[k]
                             sl++;
@@ -856,6 +857,249 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         
     })
+
+    const videoExplore = async (id,tab) => {
+        entityOutput.innerHTML = `
+            VideoId : <span class="text-danger font-weight-bold">${id}</span>
+            <br>
+            <br>
+            <br>
+            <img src="../1492.gif" class="center"  width="50" height="50" >
+            `
+            const topKeywords = await getTopKeywords(id);
+            console.log("1 "+topKeywords)
+            if(topKeywords) {
+                let div = document.createElement("div")
+                    div.setAttribute("class", "row ml-2")
+                    div.innerHTML = ""
+                if(topKeywords[0] == "No Results" || topKeywords.length == 0){
+                    suggestionsOutput.innerHTML = 'No results at this moment..'
+                    suggestionsOutput.appendChild(div)
+                }else{
+                    console.log("2 "+topKeywords)
+                    
+                    for (let i = 0; i < 5; i++) {
+                        if (topKeywords[i] == undefined) break;
+                        const col = document.createElement("radio");
+                        col.innerHTML = `<label ><input type="checkbox" id=${i} name="radio1" value="${topKeywords[i]}"><span style="padding:10px; margin:10;font-size:18px">${topKeywords[i]}</span></label>`
+                        div.appendChild(col)
+                    }
+                    //console.log("Yo",selectedKeywords)
+                    const submitSelectedKeywordButton = document.createElement("button");
+                    submitSelectedKeywordButton.setAttribute("class","btn btn-outline-danger");
+                    submitSelectedKeywordButton.innerHTML="Search Keyword";
+                    submitSelectedKeywordButton.addEventListener("click",(e)=>{
+                        TSstart = Date.now();
+                        rt.innerHTML = ""
+                        const selectedKeywords = document.querySelectorAll("input[name='radio1']:checked");
+                        let temp =""
+                        selectedKeywords.forEach(ele=>{
+                            temp = temp+ele.value+" "
+                        });
+                        tableOutput.innerHTML = `<br>
+                        <img src="../1492.gif" class="center"  width="50" height="50" >`
+                        getResponseByKeywordSubmit(id,temp,tab)
+                        
+                    })
+                    div.appendChild(submitSelectedKeywordButton)
+                    suggestionsOutput.innerHTML = ''
+                    suggestionsOutput.appendChild(div)
+            }
+            }
+            const { unique_ents } = await getEntities(id);
+            
+            if (unique_ents) {
+                btn.disabled = false
+                showGraph.disabled = false
+                showReddit.disabled = false
+                redditOutput.disabled = false
+                let div = document.createElement("div")
+                div.setAttribute("class", "row ml-2")
+                div.innerHTML = ""
+                for (let i = 0; i < 10; i++) {
+                    if (unique_ents[i] == undefined) break;
+                    const col = document.createElement("radio");
+                    col.innerHTML = `<label ><input type="checkbox" id=${i} class="btn btn-danger" name="radio" value="${unique_ents[i]}"><span style="padding:10px; margin:10;font-size:18px">${unique_ents[i]}</span></label>`
+                    div.appendChild(col)
+                }
+                const submitSelectedEntityButton = document.createElement("button");
+                submitSelectedEntityButton.setAttribute("class","btn btn-outline-danger");
+                submitSelectedEntityButton.innerHTML="Search Entities";
+                                           
+                document.getElementById("myList");
+                submitSelectedEntityButton.addEventListener("click",(e)=>{
+                    rt.innerHTML = ""
+                    let entityArray = [];
+                    e.preventDefault();
+                    const selectedEntities = document.querySelectorAll("input[name='radio']:checked");
+                    if(selectedEntities.length>0){
+                        selectedEntities.forEach(ele=>{
+                            entityArray.push(ele.value)
+                        });
+                        // Display loading Message;
+                        tableOutput.innerHTML = `<br>
+                        <img src="../1492.gif" class="center"  width="50" height="50" >`
+                        getResponseByEntity(id,entityArray,tab)
+                    }
+                    else{
+                        tableOutput.innerHTML = `<span class="text-danger font-weight-bold f-2">Please select atleast one entity...</span>`
+                    }
+                
+                })
+                div.appendChild(submitSelectedEntityButton)
+                entityOutput.innerHTML = ''
+                entityOutput.appendChild(div)
+            }
+
+            btn.addEventListener("click", async (e) =>  {
+                TSstart = Date.now();
+                rt.innerHTML = ""
+                e.preventDefault();
+                const inputValue = inputElement.value.toLowerCase();
+                if (inputValue == "") {
+                    tableOutput.innerHTML = `
+                    <span class="text-danger font-weight-bold f-2">Please enter some text to search...</span>
+                    `
+                }
+                else {
+                    tableOutput.innerHTML = `<br>
+                    <img src="../1492.gif" class="center"  width="50" height="50" >`
+                    
+                    let x = await insertKey(id,inputValue)
+                    console.log("X: ",x)
+                    let div = document.createElement("div")
+                    div.setAttribute("class", "row ml-2")
+                    div.innerHTML = ""
+                    for (let i = 0; i < 5; i++) {
+                        if (x[i] == undefined) break;
+                        const col = document.createElement("radio");
+                        col.innerHTML = `<label ><input type="checkbox" id=${i} name="radio1" value="${x[i]}"><span style="padding:10px; margin:10;font-size:18px">${x[i]}</span></label>`
+                        div.appendChild(col)
+                    }
+                    const submitSelectedKeywordButton = document.createElement("button");
+                    submitSelectedKeywordButton.setAttribute("class","btn btn-outline-danger");
+                    submitSelectedKeywordButton.innerHTML="Search Keywords";
+                    submitSelectedKeywordButton.addEventListener("click",(_)=>{
+                        const selectedKeywords = document.querySelectorAll("input[name='radio1']:checked");
+                        TSstart = Date.now();
+                        rt.innerHTML = ""
+                        let temp =""
+                        selectedKeywords.forEach(ele=>{
+                            temp = temp+ele.value+" "
+                        });
+                        tableOutput.innerHTML = `<br>
+                        <img src="../1492.gif" class="center"  width="50" height="50" >`
+                        getResponseByKeywordSubmit(id,temp,tab)
+                        
+                        
+                    })
+                    div.appendChild(submitSelectedKeywordButton)
+                    suggestionsOutput.innerHTML = ''
+                    suggestionsOutput.appendChild(div)
+                    getResponseByKeywordSubmit(id, inputValue, tab)
+                    // const tKeys = getTopKeywords(id)
+                    // for (let i = 0; i < 5; i++) {
+                    //     if (tKeys[i] == undefined) break;
+                    //     const col = document.createElement("radio");
+                    //     col.innerHTML = `<label ><input type="checkbox" id=${i} name="radio1" value="${tKeys[i]}"><span style="padding:10px; margin:10;font-size:18px">${tKeys[i]}</span></label>`
+                    //     div.appendChild(col)
+                    // }
+                }
+            })
+
+            showGraph.addEventListener("click",async (e) => {
+                home.style.display="none";
+                graphOutput.style.display="block";
+                graphDiv.style.display="none";
+                loadingHeader.style.display="block";
+
+                e.preventDefault();
+            
+                const graphData = await getGraphData(id);
+                console.log("Graph Data",graphData)
+                let sentimentKeyArray=[]
+                let sentimentValueArray=[]
+                let countKeyArray=[]
+                let countValueArray=[]
+                if(graphData){
+                    let countObject = graphData.label_stats;
+                    for(let key in countObject){
+                        countKeyArray.push(key);
+                        countValueArray.push(countObject[key])
+                    }
+                    delete graphData.label_stats;
+                    for(let key in graphData){
+                        sentimentKeyArray.push(key);
+                        sentimentValueArray.push(graphData[key])
+                    }
+                    
+
+                }
+                plotDonutGraph(sentimentKeyArray,sentimentValueArray);
+                plotBarGraph(countKeyArray,countValueArray);
+            })
+
+            showReddit.addEventListener("click",async (e) => {
+                home.style.display="none";
+                redditOutput.style.display="block";
+                graphDiv.style.display="none";
+                loadingHeader_R.style.display="block";
+
+                redditTableOutput.innerHTML = ""
+                
+        
+                e.preventDefault();
+                const rawResponse = await fetch(`https://youtube-assistant-keyword.herokuapp.com/api/v1/keyword/entity/redditData`, {
+                        method: 'POST',
+                        headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({'entList': unique_ents})
+                    });
+                    const content = await rawResponse.json();
+                    console.log(content)
+                    if(content){
+                        let urlR = content.urls.filter(e=>e!=null)
+                        console.log(urlR)
+                        let rList = extractREntity(content.urls)
+                        console.log(rList)
+                        loadingHeader_R.style.display="none"
+                        
+                        urlR.forEach((element,index)=> {
+                        let div = document.createElement("div")
+                        //div.className = "list-group-item list-group-item-action btn"
+                        div.innerHTML = `<div class="grid-item" width="100"><div class="alert alert-dark">
+                        <img src="./reddit(Trans).png"  id="redditL" width="75" class="btn" height="63" disabled></img>
+                        <a href=${element} target="_blank" >
+                        ${rList[index]}
+                        </a>
+                    </div>
+                    </div>
+                
+                        `
+                        redditTableOutput.appendChild(div)
+                })
+                
+                    }
+
+                
+            })
+
+            Rbtn.addEventListener("click",(e)=>{
+                e.preventDefault();
+                redditOutput.style.display="none";
+                home.style.display="block";
+                loadingHeader_R.style.display="none";
+            })
+
+            goBack.addEventListener("click",(e)=>{
+                e.preventDefault();
+                graphOutput.style.display="none";
+                home.style.display="block";
+                loadingHeader.style.display="none";
+            })
+    }
     
 
 
