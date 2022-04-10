@@ -151,7 +151,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         ele.comment_sentiment,
                         ele.dic_comm_senti,
                         ele.dic_vid_senti,
-                        ele.dic_label_stats)
+                        ele.dic_label_stats,`https://www.youtube.com/watch?v=${ele.videoID}`)
                 }
             })
             ul.appendChild(li)
@@ -159,7 +159,7 @@ document.addEventListener("DOMContentLoaded", () => {
         tableOutput.appendChild(ul)
     }
 
-    const displayTableData = (data, tab) => {
+    const displayTableData = (data, tab,new_url) => {
         TSstop = Date.now();
         console.log(TSstart,TSstop,(TSstop-TSstart))
         rt.setAttribute("class","text-left")
@@ -195,7 +195,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 e.preventDefault()
                 let time = parseInt(ele.start)
                 let baseUrl = tab.url.replace(regexUrlModify, "")
-                let newUrl = baseUrl + "&t=" + time
+                let newUrl = new_url + "&t=" + time
                 chrome.tabs.update(tab.id, { url: newUrl })
             })
             ul.appendChild(li)
@@ -203,22 +203,22 @@ document.addEventListener("DOMContentLoaded", () => {
         tableOutput.appendChild(ul)
     }
 
-    const getResponseByKeywordSubmit = async (id, keyWord, tab) => {
+    const getResponseByKeywordSubmit = async (id, keyWord, tab,url_new) => {
         //console.log(id,keyWord,tab)
         if(cache_map[keyWord]){
-            displayTableData(cache_map[keyWord], tab)
+            displayTableData(cache_map[keyWord], tab, url_new)
         }else{
             const res = await fetch(`${baseLocalURL}/wild_card/${id}/${keyWord}`)
             const data = await res.json();
             console.log("Search Data: ",data)
             cache_map[keyWord] = data
-            displayTableData(data, tab)
+            displayTableData(data, tab,url_new)
 
         }
         
     }
 
-    const getResponseByEntity = async (id, query, tab) => {
+    const getResponseByEntity = async (id, query, tab,url_new) => {
         TSstart = Date.now()
         const dataObject = {
             video_id: id, query: query
@@ -234,7 +234,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const res = await fetch(`${baseLocalURL}/search_by_ents`, options);
         const data = await res.json();
         console.log("Entity Data",query,data)
-        displayTableData(data, tab)
+        displayTableData(data, tab,url_new)
     }
 
     const plotBarGraph = (key,value) => {
@@ -655,7 +655,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         });
                         tableOutput.innerHTML = `<br>
                         <img src="../1492.gif" class="center"  width="50" height="50" >`
-                        getResponseByKeywordSubmit(id,temp,tabs[0])
+                        getResponseByKeywordSubmit(id,temp,tabs[0],url)
                         
                     })
                     div.appendChild(submitSelectedKeywordButton)
@@ -746,14 +746,14 @@ document.addEventListener("DOMContentLoaded", () => {
                         });
                         tableOutput.innerHTML = `<br>
                         <img src="../1492.gif" class="center"  width="50" height="50" >`
-                        getResponseByKeywordSubmit(id,temp,tabs[0])
+                        getResponseByKeywordSubmit(id,temp,tabs[0],url)
                         
                         
                     })
                     div.appendChild(submitSelectedKeywordButton)
                     suggestionsOutput.innerHTML = ''
                     suggestionsOutput.appendChild(div)
-                    getResponseByKeywordSubmit(id, inputValue, tabs[0])
+                    getResponseByKeywordSubmit(id, inputValue, tabs[0],url)
                     // const tKeys = getTopKeywords(id)
                     // for (let i = 0; i < 5; i++) {
                     //     if (tKeys[i] == undefined) break;
@@ -866,7 +866,7 @@ document.addEventListener("DOMContentLoaded", () => {
         
     })
 
-    const videoExplore = async (id,tab,cumm,dic_comm_senti,dic_vid_senti,dic_label_stats) => {
+    const videoExplore = async (id,tab,cumm,dic_comm_senti,dic_vid_senti,dic_label_stats,url_new) => {
         entityOutput.innerHTML = `
             VideoId : <span class="text-danger font-weight-bold">${id}</span>
             <br>
@@ -926,7 +926,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         });
                         tableOutput.innerHTML = `<br>
                         <img src="../1492.gif" class="center"  width="50" height="50" >`
-                        getResponseByKeywordSubmit(id,temp,tab)
+                        getResponseByKeywordSubmit(id,temp,tab,url_new)
                         
                     })
                     div.appendChild(submitSelectedKeywordButton)
@@ -967,7 +967,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         // Display loading Message;
                         tableOutput.innerHTML = `<br>
                         <img src="../1492.gif" class="center"  width="50" height="50" >`
-                        getResponseByEntity(id,entityArray,tab)
+                        getResponseByEntity(id,entityArray,tab,url_new)
                     }
                     else{
                         tableOutput.innerHTML = `<span class="text-danger font-weight-bold f-2">Please select atleast one entity...</span>`
@@ -1017,14 +1017,14 @@ document.addEventListener("DOMContentLoaded", () => {
                         });
                         tableOutput.innerHTML = `<br>
                         <img src="../1492.gif" class="center"  width="50" height="50" >`
-                        getResponseByKeywordSubmit(id,temp,tab)
+                        getResponseByKeywordSubmit(id,temp,tab,url_new)
                         
                         
                     })
                     div.appendChild(submitSelectedKeywordButton)
                     suggestionsOutput.innerHTML = ''
                     suggestionsOutput.appendChild(div)
-                    getResponseByKeywordSubmit(id, inputValue, tab)
+                    getResponseByKeywordSubmit(id, inputValue, tab,url_new)
                     // const tKeys = getTopKeywords(id)
                     // for (let i = 0; i < 5; i++) {
                     //     if (tKeys[i] == undefined) break;
